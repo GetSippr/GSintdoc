@@ -1,1 +1,371 @@
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sippr — Unit Economics v2</title>
+<style>
+  :root {
+    --forest: #23352D;
+    --oat: #F4F0E8;
+    --sand: #C8A97A;
+    --white: #FFFFFF;
+    --gray: #8A9B8E;
+    --red: #E05252;
+    --green: #4CAF76;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Georgia', serif; background: var(--oat); color: var(--forest); }
+  
+  header { background: var(--forest); color: var(--oat); padding: 2rem; text-align: center; }
+  header h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+  header p { color: var(--sand); font-size: 0.9rem; }
+  
+  .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem; }
+  
+  /* Scenario Toggle */
+  .scenario-toggle { display: flex; gap: 0; margin: 2rem auto; max-width: 500px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .scenario-btn { flex: 1; padding: 1rem; border: none; cursor: pointer; font-family: Georgia, serif; font-size: 0.95rem; transition: all 0.2s; }
+  .scenario-btn.promo { background: var(--sand); color: var(--forest); font-weight: bold; }
+  .scenario-btn.normal { background: var(--white); color: var(--gray); }
+  .scenario-btn.active { background: var(--forest); color: var(--oat); }
+  .scenario-badge { display: inline-block; font-size: 0.7rem; background: var(--red); color: white; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
+
+  /* Visits selector */
+  .visits-selector { display: flex; gap: 0.5rem; justify-content: center; margin: 1.5rem 0; flex-wrap: wrap; }
+  .visit-btn { padding: 0.5rem 1.2rem; border: 2px solid var(--forest); background: transparent; color: var(--forest); border-radius: 6px; cursor: pointer; font-family: Georgia, serif; transition: all 0.2s; }
+  .visit-btn.active { background: var(--forest); color: var(--oat); }
+
+  /* Stripe fee toggle */
+  .stripe-toggle { display: flex; align-items: center; justify-content: center; gap: 0.8rem; margin: 1rem 0; font-size: 0.9rem; color: var(--gray); }
+  .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: var(--gray); transition: .3s; border-radius: 24px; }
+  .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; transition: .3s; border-radius: 50%; }
+  input:checked + .slider { background: var(--forest); }
+  input:checked + .slider:before { transform: translateX(20px); }
+
+  /* Plan cards */
+  .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
+  .plan-card { background: var(--white); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .plan-header { padding: 1.2rem 1.5rem; color: var(--oat); }
+  .plan-header.starter { background: var(--forest); }
+  .plan-header.premium { background: #1a4a38; }
+  .plan-header.pro { background: var(--sand); color: var(--forest); }
+  .plan-name { font-size: 1.1rem; font-weight: bold; }
+  .plan-price { font-size: 2rem; font-weight: bold; }
+  .plan-price-old { font-size: 1rem; text-decoration: line-through; opacity: 0.6; margin-right: 8px; }
+  .plan-body { padding: 1.5rem; }
+  
+  .ue-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f0ece4; font-size: 0.9rem; }
+  .ue-row:last-child { border-bottom: none; }
+  .ue-label { color: var(--gray); }
+  .ue-value { font-weight: bold; }
+  .ue-value.negative { color: var(--red); }
+  .ue-value.positive { color: var(--green); }
+  .ue-value.neutral { color: var(--forest); }
+  
+  .net-result { background: var(--oat); border-radius: 8px; padding: 1rem; margin-top: 1rem; text-align: center; }
+  .net-amount { font-size: 1.8rem; font-weight: bold; color: var(--forest); }
+  .net-margin { font-size: 0.9rem; color: var(--gray); margin-top: 0.2rem; }
+  .net-label { font-size: 0.8rem; color: var(--gray); margin-top: 0.3rem; }
+
+  /* Comparison table */
+  .comparison { background: var(--white); border-radius: 12px; padding: 1.5rem; margin: 2rem 0; box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow-x: auto; }
+  .comparison h2 { color: var(--forest); margin-bottom: 1rem; font-size: 1.2rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th { background: var(--forest); color: var(--oat); padding: 0.8rem; text-align: center; }
+  td { padding: 0.7rem; text-align: center; border-bottom: 1px solid #f0ece4; }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { text-align: left; color: var(--gray); }
+  .highlight { background: #f0f8f4; font-weight: bold; }
+  .better { color: var(--green); }
+  .worse { color: var(--red); }
+
+  /* Stripe impact box */
+  .stripe-box { background: var(--forest); color: var(--oat); border-radius: 12px; padding: 1.5rem; margin: 2rem 0; }
+  .stripe-box h3 { color: var(--sand); margin-bottom: 1rem; }
+  .stripe-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .stripe-item { text-align: center; }
+  .stripe-amount { font-size: 1.5rem; font-weight: bold; color: var(--sand); }
+  .stripe-label { font-size: 0.8rem; color: var(--gray); margin-top: 0.3rem; }
+
+  .insight-box { background: var(--sand); border-radius: 8px; padding: 1rem 1.5rem; margin: 1.5rem 0; }
+  .insight-box p { font-size: 0.9rem; color: var(--forest); }
+  .insight-box strong { font-size: 1rem; }
+
+  footer { text-align: center; padding: 2rem; color: var(--gray); font-size: 0.8rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>☕ Sippr — Unit Economics v2</h1>
+  <p>Neto real por suscriptor · IVA 16% + ISR 30% + Comisión Stripe · Tope 13 redenciones/mes</p>
+  <p style="margin-top:0.5rem; color: #8A9B8E;">Actualizado: junio 2026 · Dato real Stripe: $499 → $474.69 neto</p>
+</header>
+
+<div class="container">
+
+  <!-- Scenario Toggle -->
+  <div style="text-align:center; margin: 1.5rem 0;">
+    <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 0.8rem;">Selecciona el escenario de precios</p>
+    <div class="scenario-toggle">
+      <button class="scenario-btn promo active" onclick="setScenario('promo')">
+        🎉 Precio de lanzamiento<br>
+        <small>Primeros 100 usuarios</small>
+      </button>
+      <button class="scenario-btn normal" onclick="setScenario('normal')">
+        Precio normal<br>
+        <small>A partir de usuario 101</small>
+      </button>
+    </div>
+  </div>
+
+  <!-- Visits selector -->
+  <div style="text-align:center; margin-bottom: 0.5rem; color: var(--gray); font-size: 0.9rem;">Visitas por suscriptor/mes</div>
+  <div class="visits-selector">
+    <button class="visit-btn" onclick="setVisits(4)">4 visitas<br><small>Casual</small></button>
+    <button class="visit-btn active" onclick="setVisits(13)">13 visitas<br><small>Límite máx</small></button>
+    <button class="visit-btn" onclick="setVisits(15)">15 visitas<br><small>Promedio UE</small></button>
+    <button class="visit-btn" onclick="setVisits(25)">25 visitas<br><small>Power user</small></button>
+  </div>
+
+  <!-- Stripe toggle -->
+  <div class="stripe-toggle">
+    <span>Incluir comisión Stripe (~4.87%)</span>
+    <label class="toggle-switch">
+      <input type="checkbox" id="stripeToggle" checked onchange="recalculate()">
+      <span class="slider"></span>
+    </label>
+    <span id="stripeLabel" style="color: var(--forest); font-weight: bold;">Incluida</span>
+  </div>
+
+  <!-- Plan Cards -->
+  <div class="plans-grid" id="plansGrid"></div>
+
+  <!-- Stripe real data box -->
+  <div class="stripe-box">
+    <h3>💳 Dato real de Stripe — primer cobro en producción</h3>
+    <div class="stripe-grid">
+      <div class="stripe-item">
+        <div class="stripe-amount">$499.00</div>
+        <div class="stripe-label">Cobrado al usuario</div>
+      </div>
+      <div class="stripe-item">
+        <div class="stripe-amount" style="color: #E05252;">-$24.31</div>
+        <div class="stripe-label">Comisión Stripe (4.87%)</div>
+      </div>
+      <div class="stripe-item">
+        <div class="stripe-amount">$474.69</div>
+        <div class="stripe-label">Neto en cuenta Stripe</div>
+      </div>
+    </div>
+    <p style="font-size: 0.8rem; color: var(--gray); margin-top: 1rem; text-align: center;">
+      Disponible: 2026-06-25 · txn_3TjUEXF4OXxsd8ry1PCcrIi1
+    </p>
+  </div>
+
+  <!-- Comparison table -->
+  <div class="comparison">
+    <h2>📊 Comparativa: Precio lanzamiento vs Precio normal</h2>
+    <p style="color: var(--gray); font-size: 0.85rem; margin-bottom: 1rem;">Neto real/suscriptor a 13 visitas/mes (límite) · ISR + IVA + Stripe incluidos</p>
+    <table id="compTable"></table>
+  </div>
+
+  <div class="insight-box">
+    <p><strong>💡 Insight clave:</strong> El precio normal ($599/$999/$1,299) mejora el neto en ~$60-80 MXN por suscriptor/mes. Con 500 usuarios eso representa ~$30,000-40,000 MXN adicionales al mes sin cambiar ningún costo operativo. El switch automático a los 105 usuarios es la decisión correcta.</p>
+  </div>
+
+</div>
+
+<footer>Sippr México · Unit Economics v2 · Datos reales de producción</footer>
+
+<script>
+const PLANS = {
+  promo: [
+    { name: 'Starter', price: 499, color: 'starter', commMin: 13, commMax: 17 },
+    { name: 'Premium', price: 899, color: 'premium', commMin: 18, commMax: 33 },
+    { name: 'Pro', price: 1199, color: 'pro', commMin: 33, commMax: 40 },
+  ],
+  normal: [
+    { name: 'Starter', price: 599, color: 'starter', commMin: 13, commMax: 17 },
+    { name: 'Premium', price: 999, color: 'premium', commMin: 18, commMax: 33 },
+    { name: 'Pro', price: 1299, color: 'pro', commMin: 33, commMax: 40 },
+  ]
+};
+
+const PROMO_PRICES = [499, 899, 1199];
+
+let currentScenario = 'promo';
+let currentVisits = 13;
+let includeStripe = true;
+
+function setScenario(s) {
+  currentScenario = s;
+  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  event.target.closest('.scenario-btn').classList.add('active');
+  recalculate();
+}
+
+function setVisits(v) {
+  currentVisits = v;
+  document.querySelectorAll('.visit-btn').forEach(b => b.classList.remove('active'));
+  event.target.closest('.visit-btn').classList.add('active');
+  recalculate();
+}
+
+function calcUE(price, commMin, commMax, visits, includeStripe) {
+  const stripeRate = 0.0487;
+  const stripeFee = includeStripe ? price * stripeRate : 0;
+  const netStripe = price - stripeFee;
+  
+  const iva = price * 0.16 / 1.16;
+  const baseGravable = price - iva;
+  
+  const commCostMin = commMin * visits;
+  const commCostMax = commMax * visits;
+  
+  const ivaAcredMin = commCostMin * 0.16 / 1.16;
+  const ivaAcredMax = commCostMax * 0.16 / 1.16;
+  
+  const brutMin = baseGravable - commCostMin + ivaAcredMin - stripeFee;
+  const brutMax = baseGravable - commCostMax + ivaAcredMax - stripeFee;
+  
+  const isrMin = brutMin * 0.30;
+  const isrMax = brutMax * 0.30;
+  
+  const netMin = brutMin - isrMin;
+  const netMax = brutMax - isrMax;
+  
+  const marginMin = (netMin / price * 100).toFixed(0);
+  const marginMax = (netMax / price * 100).toFixed(0);
+  
+  return {
+    price, stripeFee, iva, baseGravable,
+    commCostMin, commCostMax,
+    ivaAcredMin, ivaAcredMax,
+    brutMin, brutMax,
+    isrMin, isrMax,
+    netMin, netMax,
+    marginMin, marginMax
+  };
+}
+
+function renderCards() {
+  const plans = PLANS[currentScenario];
+  const promoPlans = PLANS['promo'];
+  const grid = document.getElementById('plansGrid');
+  
+  grid.innerHTML = plans.map((plan, i) => {
+    const ue = calcUE(plan.price, plan.commMin, plan.commMax, currentVisits, includeStripe);
+    const promoPrice = promoPlans[i].price;
+    const showOld = currentScenario === 'normal';
+    
+    return `
+    <div class="plan-card">
+      <div class="plan-header ${plan.color}">
+        <div class="plan-name">${plan.name}</div>
+        <div>
+          ${showOld ? `<span class="plan-price-old">$${promoPrice}</span>` : ''}
+          <span class="plan-price">$${plan.price}<small style="font-size:0.5em">/mes</small></span>
+        </div>
+        ${currentScenario === 'promo' ? '<div style="font-size:0.75rem; margin-top:0.3rem; opacity:0.8">🎉 Precio de lanzamiento</div>' : ''}
+      </div>
+      <div class="plan-body">
+        <div class="ue-row">
+          <span class="ue-label">Precio público (IVA incl.)</span>
+          <span class="ue-value neutral">$${plan.price}</span>
+        </div>
+        ${includeStripe ? `<div class="ue-row">
+          <span class="ue-label">(-) Comisión Stripe ~4.87%</span>
+          <span class="ue-value negative">-$${ue.stripeFee.toFixed(0)}</span>
+        </div>` : ''}
+        <div class="ue-row">
+          <span class="ue-label">(-) IVA trasladado 16%</span>
+          <span class="ue-value negative">-$${ue.iva.toFixed(0)}</span>
+        </div>
+        <div class="ue-row">
+          <span class="ue-label">Base gravable</span>
+          <span class="ue-value neutral">$${(ue.baseGravable - ue.stripeFee).toFixed(0)}</span>
+        </div>
+        <div class="ue-row">
+          <span class="ue-label">(-) Comisión cafetería (${currentVisits} visitas)</span>
+          <span class="ue-value negative">-$${ue.commCostMin}–$${ue.commCostMax}</span>
+        </div>
+        <div class="ue-row">
+          <span class="ue-label">(+) IVA acreditable cafetería</span>
+          <span class="ue-value positive">+$${ue.ivaAcredMin.toFixed(0)}–$${ue.ivaAcredMax.toFixed(0)}</span>
+        </div>
+        <div class="ue-row">
+          <span class="ue-label">Margen bruto operativo</span>
+          <span class="ue-value neutral">$${ue.brutMax.toFixed(0)}–$${ue.brutMin.toFixed(0)}</span>
+        </div>
+        <div class="ue-row">
+          <span class="ue-label">(-) ISR estimado 30%</span>
+          <span class="ue-value negative">-$${ue.isrMax.toFixed(0)}–$${ue.isrMin.toFixed(0)}</span>
+        </div>
+        <div class="net-result">
+          <div class="net-amount">$${Math.round(ue.netMax)}–$${Math.round(ue.netMin)}</div>
+          <div class="net-margin">Neto real/suscriptor/mes</div>
+          <div class="net-label">${ue.marginMax}%–${ue.marginMin}% de $${plan.price} cobrado</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderCompTable() {
+  const visits = 13;
+  const rows = ['Starter', 'Premium', 'Pro'];
+  const promoPlans = PLANS['promo'];
+  const normalPlans = PLANS['normal'];
+  
+  let html = `<tr>
+    <th>Plan</th>
+    <th>Precio lanzamiento</th>
+    <th>Neto lanzamiento</th>
+    <th>Precio normal</th>
+    <th>Neto normal</th>
+    <th>Diferencia/mes</th>
+    <th>Diferencia × 100 usuarios</th>
+  </tr>`;
+  
+  rows.forEach((name, i) => {
+    const p = promoPlans[i];
+    const n = normalPlans[i];
+    const ueP = calcUE(p.price, p.commMin, p.commMax, visits, true);
+    const ueN = calcUE(n.price, n.commMin, n.commMax, visits, true);
+    
+    const netP = Math.round((ueP.netMin + ueP.netMax) / 2);
+    const netN = Math.round((ueN.netMin + ueN.netMax) / 2);
+    const diff = netN - netP;
+    const diff100 = diff * 100;
+    
+    html += `<tr class="${currentScenario === 'promo' && i === 0 ? 'highlight' : ''}">
+      <td><strong>${name}</strong></td>
+      <td>$${p.price}</td>
+      <td>~$${netP}/mes</td>
+      <td>$${n.price}</td>
+      <td>~$${netN}/mes</td>
+      <td class="better">+$${diff}/mes</td>
+      <td class="better">+$${diff100.toLocaleString()}/mes</td>
+    </tr>`;
+  });
+  
+  document.getElementById('compTable').innerHTML = html;
+}
+
+function recalculate() {
+  includeStripe = document.getElementById('stripeToggle').checked;
+  document.getElementById('stripeLabel').textContent = includeStripe ? 'Incluida' : 'Excluida';
+  renderCards();
+  renderCompTable();
+}
+
+// Init
+recalculate();
+</script>
+</body>
+</html>
