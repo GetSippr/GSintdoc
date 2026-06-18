@@ -1,1 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sippr — LTV / CAC / Churn v2</title>
+<style>
+  :root {
+    --forest: #23352D; --oat: #F4F0E8; --sand: #C8A97A;
+    --white: #FFFFFF; --gray: #8A9B8E; --red: #E05252; --green: #4CAF76;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Georgia, serif; background: var(--oat); color: var(--forest); }
+  header { background: var(--forest); color: var(--oat); padding: 2rem; text-align: center; }
+  header h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+  header p { color: var(--sand); font-size: 0.9rem; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem; }
 
+  /* Scenario toggle */
+  .scenario-toggle { display: flex; gap: 0; margin: 1.5rem auto; max-width: 500px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .scenario-btn { flex: 1; padding: 0.9rem; border: none; cursor: pointer; font-family: Georgia, serif; font-size: 0.9rem; }
+  .scenario-btn.active { background: var(--forest); color: var(--oat); font-weight: bold; }
+  .scenario-btn:not(.active) { background: var(--white); color: var(--gray); }
+
+  /* Sliders */
+  .sliders-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+  .slider-card { background: var(--white); border-radius: 10px; padding: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .slider-label { font-size: 0.85rem; color: var(--gray); margin-bottom: 0.5rem; }
+  .slider-value { font-size: 1.4rem; font-weight: bold; color: var(--forest); margin-bottom: 0.5rem; }
+  input[type=range] { width: 100%; accent-color: var(--forest); }
+
+  /* LTV Cards */
+  .ltv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
+  .ltv-card { background: var(--white); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .ltv-header { padding: 1.2rem 1.5rem; }
+  .ltv-header.starter { background: var(--forest); color: var(--oat); }
+  .ltv-header.premium { background: #1a4a38; color: var(--oat); }
+  .ltv-header.pro { background: var(--sand); color: var(--forest); }
+  .ltv-plan { font-size: 1rem; font-weight: bold; }
+  .ltv-price { font-size: 1.5rem; font-weight: bold; }
+  .ltv-price-old { font-size: 0.9rem; text-decoration: line-through; opacity: 0.6; margin-right: 6px; }
+  .ltv-body { padding: 1.5rem; }
+  .ltv-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #f0ece4; font-size: 0.9rem; }
+  .ltv-row:last-child { border-bottom: none; }
+  .ltv-label { color: var(--gray); }
+  .ltv-val { font-weight: bold; }
+  .big-metric { text-align: center; background: var(--oat); border-radius: 8px; padding: 1rem; margin-top: 1rem; }
+  .big-num { font-size: 2rem; font-weight: bold; color: var(--forest); }
+  .big-sub { font-size: 0.85rem; color: var(--gray); margin-top: 0.2rem; }
+
+  /* Chart */
+  .chart-section { background: var(--white); border-radius: 12px; padding: 1.5rem; margin: 2rem 0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .chart-section h2 { margin-bottom: 1rem; font-size: 1.1rem; }
+  canvas { width: 100% !important; }
+
+  /* Comparison table */
+  .comp-table { background: var(--white); border-radius: 12px; padding: 1.5rem; margin: 2rem 0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow-x: auto; }
+  .comp-table h2 { margin-bottom: 1rem; font-size: 1.1rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th { background: var(--forest); color: var(--oat); padding: 0.8rem; text-align: center; }
+  td { padding: 0.7rem; text-align: center; border-bottom: 1px solid #f0ece4; }
+  td:first-child { text-align: left; color: var(--gray); }
+  .better { color: var(--green); font-weight: bold; }
+
+  .insight { background: var(--sand); border-radius: 8px; padding: 1rem 1.5rem; margin: 1.5rem 0; font-size: 0.9rem; }
+  footer { text-align: center; padding: 2rem; color: var(--gray); font-size: 0.8rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>☕ Sippr — LTV / CAC / Churn v2</h1>
+  <p>Calculadora interactiva · Dos escenarios de precio · Comisión Stripe incluida</p>
+  <p style="margin-top:0.5rem; color:#8A9B8E;">Actualizado: junio 2026</p>
+</header>
+
+<div class="container">
+
+  <!-- Scenario toggle -->
+  <div style="text-align:center; margin-bottom:0.5rem; color:var(--gray); font-size:0.9rem;">Escenario de precios</div>
+  <div class="scenario-toggle">
+    <button class="scenario-btn active" onclick="setScenario('promo', this)">🎉 Lanzamiento — $499 / $899 / $1,199</button>
+    <button class="scenario-btn" onclick="setScenario('normal', this)">Normal — $599 / $999 / $1,299</button>
+  </div>
+
+  <!-- Sliders -->
+  <div class="sliders-grid">
+    <div class="slider-card">
+      <div class="slider-label">Churn mensual — Starter</div>
+      <div class="slider-value" id="churnStarterVal">8%</div>
+      <input type="range" id="churnStarter" min="1" max="30" value="8" oninput="recalc()">
+    </div>
+    <div class="slider-card">
+      <div class="slider-label">Churn mensual — Premium</div>
+      <div class="slider-value" id="churnPremiumVal">5%</div>
+      <input type="range" id="churnPremium" min="1" max="25" value="5" oninput="recalc()">
+    </div>
+    <div class="slider-card">
+      <div class="slider-label">Churn mensual — Pro</div>
+      <div class="slider-value" id="churnProVal">4%</div>
+      <input type="range" id="churnPro" min="1" max="20" value="4" oninput="recalc()">
+    </div>
+    <div class="slider-card">
+      <div class="slider-label">Ratio LTV / CAC objetivo</div>
+      <div class="slider-value" id="ratioVal">3×</div>
+      <input type="range" id="ratio" min="1" max="10" value="3" oninput="recalc()">
+    </div>
+  </div>
+
+  <!-- LTV Cards -->
+  <div class="ltv-grid" id="ltvGrid"></div>
+
+  <!-- LTV Chart -->
+  <div class="chart-section">
+    <h2>📈 LTV acumulado mes a mes (24 meses)</h2>
+    <canvas id="ltvChart" height="300"></canvas>
+  </div>
+
+  <!-- Comparison table -->
+  <div class="comp-table">
+    <h2>📊 Comparativa: Lanzamiento vs Normal</h2>
+    <p style="color:var(--gray); font-size:0.85rem; margin-bottom:1rem;">A churn base · Stripe incluido · 13 visitas/mes</p>
+    <table id="compTable"></table>
+  </div>
+
+  <div class="insight" id="insightBox"></div>
+
+</div>
+
+<footer>Sippr México · LTV/CAC v2 · github.com/GetSippr/GSintdoc</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+const SCENARIOS = {
+  promo: [499, 899, 1199],
+  normal: [599, 999, 1299]
+};
+const PROMO = [499, 899, 1199];
+const COMM_MIN = [13, 18, 33];
+const COMM_MAX = [17, 33, 40];
+const NAMES = ['Starter', 'Premium', 'Pro'];
+const COLORS = ['#23352D', '#1a4a38', '#C8A97A'];
+const TEXT_COLORS = ['#F4F0E8', '#F4F0E8', '#23352D'];
+const VISITS = 13;
+const STRIPE_RATE = 0.0487;
+const ISR = 0.30;
+const IVA = 0.16;
+
+let scenario = 'promo';
+let chart = null;
+
+function setScenario(s, btn) {
+  scenario = s;
+  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  recalc();
+}
+
+function getNetMonthly(price, commMin, commMax) {
+  const stripe = price * STRIPE_RATE;
+  const ivaOut = price * IVA / (1 + IVA);
+  const base = price - ivaOut - stripe;
+  const commAvg = (commMin * VISITS + commMax * VISITS) / 2;
+  const ivaAcred = commAvg * IVA / (1 + IVA);
+  const brut = base - commAvg + ivaAcred;
+  const isr = brut * ISR;
+  return Math.round(brut - isr);
+}
+
+function recalc() {
+  const prices = SCENARIOS[scenario];
+  const churnS = parseInt(document.getElementById('churnStarter').value) / 100;
+  const churnP = parseInt(document.getElementById('churnPremium').value) / 100;
+  const churnPr = parseInt(document.getElementById('churnPro').value) / 100;
+  const r = parseInt(document.getElementById('ratio').value);
+  const churns = [churnS, churnP, churnPr];
+
+  document.getElementById('churnStarterVal').textContent = (churnS*100).toFixed(0) + '%';
+  document.getElementById('churnPremiumVal').textContent = (churnP*100).toFixed(0) + '%';
+  document.getElementById('churnProVal').textContent = (churnPr*100).toFixed(0) + '%';
+  document.getElementById('ratioVal').textContent = r + '×';
+
+  // Render LTV cards
+  const grid = document.getElementById('ltvGrid');
+  grid.innerHTML = NAMES.map((name, i) => {
+    const price = prices[i];
+    const churn = churns[i];
+    const vida = (1 / churn).toFixed(1);
+    const neto = getNetMonthly(price, COMM_MIN[i], COMM_MAX[i]);
+    const ltv = Math.round(neto * vida);
+    const cac = Math.round(ltv / r);
+    const payback = (price / neto).toFixed(1);
+    const showOld = scenario === 'normal';
+
+    return `<div class="ltv-card">
+      <div class="ltv-header ${name.toLowerCase()}">
+        <div class="ltv-plan">${name}</div>
+        <div class="ltv-price">
+          ${showOld ? `<span class="ltv-price-old">$${PROMO[i]}</span>` : ''}
+          $${price}/mes
+        </div>
+      </div>
+      <div class="ltv-body">
+        <div class="ltv-row"><span class="ltv-label">Neto real/mes (Stripe+IVA+ISR)</span><span class="ltv-val">~$${neto}</span></div>
+        <div class="ltv-row"><span class="ltv-label">Churn mensual</span><span class="ltv-val">${(churn*100).toFixed(0)}%</span></div>
+        <div class="ltv-row"><span class="ltv-label">Vida promedio</span><span class="ltv-val">${vida} meses</span></div>
+        <div class="ltv-row"><span class="ltv-label">Payback period</span><span class="ltv-val">${payback} meses</span></div>
+        <div class="big-metric">
+          <div class="big-num">$${ltv.toLocaleString()}</div>
+          <div class="big-sub">LTV por suscriptor</div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-top:0.8rem;">
+          <div class="big-metric">
+            <div class="big-num" style="font-size:1.3rem;">$${cac.toLocaleString()}</div>
+            <div class="big-sub">CAC máximo (${r}×)</div>
+          </div>
+          <div class="big-metric">
+            <div class="big-num" style="font-size:1.3rem;">${r}×</div>
+            <div class="big-sub">LTV/CAC objetivo</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Render chart
+  const months = Array.from({length:25}, (_,i) => i);
+  const datasets = NAMES.map((name, i) => {
+    const neto = getNetMonthly(prices[i], COMM_MIN[i], COMM_MAX[i]);
+    const churn = churns[i];
+    const data = months.map(m => {
+      if (m === 0) return 0;
+      let total = 0;
+      for (let k = 1; k <= m; k++) total += neto * Math.pow(1-churn, k-1);
+      return Math.round(total);
+    });
+    return {
+      label: `${name} $${prices[i]}`,
+      data,
+      borderColor: COLORS[i],
+      backgroundColor: COLORS[i] + '20',
+      fill: true,
+      tension: 0.4,
+      borderWidth: 2.5
+    };
+  });
+
+  if (chart) chart.destroy();
+  chart = new Chart(document.getElementById('ltvChart'), {
+    type: 'line',
+    data: { labels: months.map(m => `M${m}`), datasets },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y: { ticks: { callback: v => '$' + v.toLocaleString() } }
+      }
+    }
+  });
+
+  // Comparison table
+  const promoNetos = NAMES.map((_, i) => getNetMonthly(PROMO[i], COMM_MIN[i], COMM_MAX[i]));
+  const normalPrices = SCENARIOS['normal'];
+  const normalNetos = NAMES.map((_, i) => getNetMonthly(normalPrices[i], COMM_MIN[i], COMM_MAX[i]));
+
+  let html = `<tr><th>Plan</th><th>Precio lanz.</th><th>Neto lanz.</th><th>LTV lanz.</th><th>Precio normal</th><th>Neto normal</th><th>LTV normal</th><th>+LTV</th><th>+100 usuarios/mes</th></tr>`;
+  NAMES.forEach((name, i) => {
+    const churn = churns[i];
+    const vida = 1 / churn;
+    const ltvP = Math.round(promoNetos[i] * vida);
+    const ltvN = Math.round(normalNetos[i] * vida);
+    const diffLTV = ltvN - ltvP;
+    const diff100 = (normalNetos[i] - promoNetos[i]) * 100;
+    html += `<tr>
+      <td><strong>${name}</strong></td>
+      <td>$${PROMO[i]}</td><td>~$${promoNetos[i]}/mes</td><td>$${ltvP.toLocaleString()}</td>
+      <td>$${normalPrices[i]}</td><td>~$${normalNetos[i]}/mes</td><td>$${ltvN.toLocaleString()}</td>
+      <td class="better">+$${diffLTV.toLocaleString()}</td>
+      <td class="better">+$${diff100.toLocaleString()}/mes</td>
+    </tr>`;
+  });
+  document.getElementById('compTable').innerHTML = html;
+
+  // Insight
+  const netS = getNetMonthly(prices[0], COMM_MIN[0], COMM_MAX[0]);
+  const cacS = Math.round(netS / churnS / r);
+  document.getElementById('insightBox').innerHTML = `
+    <strong>💡 Lectura clave:</strong> En MVP con adquisición orgánica el CAC real es $0–200 MXN. 
+    Con Starter ${scenario === 'promo' ? '$499' : '$599'} eso da un LTV/CAC de 
+    ${Math.round(netS / churnS / 200)}–${Math.round(netS / churnS)}× — 
+    espacio enorme antes de necesitar paid. 
+    El número a vigilar: cada punto de churn que bajes en Starter suma 
+    ~$${Math.round(netS / (churnS*churnS*100))} MXN al LTV.
+    ${scenario === 'normal' ? ' Con precio normal el LTV mejora ~15-20% sin cambiar ningún costo operativo.' : ''}
+  `;
+}
+
+recalc();
+</script>
+</body>
+</html>
