@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sippr — Proyección 12 meses</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f5f5f3;
+  --color-background-tertiary: #f0efe9;
+  --color-text-primary: #1a1a18;
+  --color-text-secondary: #6b6b67;
+  --color-text-tertiary: #9a9a95;
+  --color-border-tertiary: rgba(0,0,0,0.10);
+  --color-border-secondary: rgba(0,0,0,0.18);
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  background: var(--color-background-tertiary);
+  color: var(--color-text-primary);
+  padding: 2rem 1rem;
+  min-height: 100vh;
+}
+.page {
+  max-width: 980px;
+  margin: 0 auto;
+  background: var(--color-background-primary);
+  border-radius: var(--border-radius-lg);
+  border: 0.5px solid var(--color-border-tertiary);
+  padding: 2rem 2rem 2.5rem;
+}
+.header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+.logo-cup {
+  width: 40px; height: 40px;
+  background: #23352D;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 500; color: #F4F0E8;
+  flex-shrink: 0;
+}
+.header-text h1 { font-size: 17px; font-weight: 500; }
+.header-text p { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+.updated { margin-left: auto; font-size: 11px; color: var(--color-text-tertiary); white-space: nowrap; }
+.sec { font-size: 11px; font-weight: 500; letter-spacing: .07em; text-transform: uppercase; color: var(--color-text-secondary); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 0.5px solid var(--color-border-tertiary); margin-top: 20px; }
+.sec:first-child { margin-top: 0; }
+.grid4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 14px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-bottom: 14px; }
+@media(max-width:640px){ .grid4{grid-template-columns:repeat(2,1fr);} .grid2{grid-template-columns:1fr;} }
+.mc { background: var(--color-background-secondary); border-radius: 8px; padding: 10px 12px; }
+.mc-lbl { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 3px; }
+.mc-val { font-size: 20px; font-weight: 500; color: var(--color-text-primary); }
+.mc-sub { font-size: 10px; color: var(--color-text-tertiary); margin-top: 2px; }
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: 12px; padding: 14px 16px; }
+.note { border-left: 2px solid #1D9E75; padding: 10px 14px; font-size: 13px; color: #085041; background: #E1F5EE; margin-bottom: 14px; }
+.note.info { border-left-color: #378ADD; color: #042C53; background: #E6F1FB; }
+.chart-wrap { position: relative; width: 100%; height: 300px; margin-bottom: 6px; }
+.chart-wrap2 { position: relative; width: 100%; height: 220px; margin-bottom: 6px; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px; }
+.legend span { display: flex; align-items: center; gap: 4px; }
+.sq { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+th { padding: 6px 8px; font-size: 10px; font-weight: 500; color: var(--color-text-secondary); background: var(--color-background-secondary); border-bottom: 0.5px solid var(--color-border-tertiary); text-align: right; white-space: nowrap; }
+th:first-child { text-align: left; }
+td { padding: 6px 8px; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); text-align: right; white-space: nowrap; }
+td:first-child { text-align: left; font-weight: 500; }
+tr.hl td { background: var(--color-background-secondary); }
+tr.trigger-row td { background: #FAEEDA; color: #633806; font-size: 10px; font-weight: 500; }
+.pos { color: #0F6E56; font-weight: 500; }
+.neg { color: #A32D2D; }
+.tag { font-size: 10px; padding: 2px 6px; border-radius: 5px; display: inline-block; background: #FAEEDA; color: #633806; }
+.slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.slider-row label { font-size: 12px; color: var(--color-text-secondary); min-width: 200px; }
+.slider-row input { flex: 1; }
+.slider-row .val { font-size: 13px; font-weight: 500; min-width: 50px; text-align: right; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="header">
+  <div class="logo-cup">S</div>
+  <div class="header-text">
+    <h1>Proyección de Revenue — 12 meses</h1>
+    <p>Mezcla: 70% Starter · 20% Premium · 10% Pro · Triggers de contratación incluidos</p>
+  </div>
+  <div class="updated">Junio 2026</div>
+</div>
+
+<div class="note info">
+  Neto ponderado: $218/suscriptor/mes (después de IVA 16% + ISR 30% + comisiones máximas · 13 redenciones/mes). MRR bruto = suscriptores × $699 precio promedio ponderado. Churn ponderado base: 7%.
+</div>
+
+<div class="sec">Ajusta los parámetros</div>
+<div class="slider-row">
+  <label>Nuevos suscriptores M1 (lanzamiento)</label>
+  <input type="range" min="5" max="40" value="20" step="1" id="s_m1" oninput="recalc()">
+  <span class="val" id="v_m1">20</span>
+</div>
+<div class="slider-row">
+  <label>Nuevos suscriptores adicionales/mes</label>
+  <input type="range" min="10" max="60" value="30" step="5" id="s_cre" oninput="recalc()">
+  <span class="val" id="v_cre">30</span>
+</div>
+<div class="slider-row">
+  <label>Churn mensual ponderado</label>
+  <input type="range" min="3" max="15" value="7" step="1" id="s_ch" oninput="recalc()">
+  <span class="val" id="v_ch">7%</span>
+</div>
+
+<div class="sec">Métricas clave al mes 12</div>
+<div class="grid4">
+  <div class="mc"><div class="mc-lbl">Suscriptores activos M12</div><div class="mc-val pos" id="kpi_subs">—</div><div class="mc-sub">con churn aplicado</div></div>
+  <div class="mc"><div class="mc-lbl">MRR bruto M12</div><div class="mc-val pos" id="kpi_mrr">—</div><div class="mc-sub">precio lista × suscriptores</div></div>
+  <div class="mc"><div class="mc-lbl">Revenue neto M12</div><div class="mc-val pos" id="kpi_neto">—</div><div class="mc-sub">después IVA + ISR + comisiones</div></div>
+  <div class="mc"><div class="mc-lbl">Neto acumulado año 1</div><div class="mc-val" id="kpi_acum">—</div><div class="mc-sub">12 meses completos</div></div>
+</div>
+
+<div class="sec">Revenue neto vs costos de equipo</div>
+<div class="legend">
+  <span><span class="sq" style="background:#9FE1CB"></span>Revenue neto</span>
+  <span><span class="sq" style="background:#F7C1C1"></span>Costos equipo + ops</span>
+  <span><span class="sq" style="background:#378ADD"></span>Inversión fundador</span>
+  <span><span class="sq" style="background:#1D9E75"></span>Margen operativo</span>
+</div>
+<div class="chart-wrap">
+  <canvas id="c_revenue"></canvas>
+</div>
+
+<div class="sec">Suscriptores activos mes a mes</div>
+<div class="chart-wrap2">
+  <canvas id="c_subs"></canvas>
+</div>
+
+<div class="sec">Tabla detallada mes a mes</div>
+<div class="card" style="padding:0;overflow-x:auto;">
+<table style="min-width:720px;">
+  <thead>
+    <tr>
+      <th style="text-align:left">Mes</th>
+      <th>Nuevos</th>
+      <th>Activos</th>
+      <th>MRR bruto</th>
+      <th>Rev. neto</th>
+      <th>Costo equipo</th>
+      <th>Inv. fundador</th>
+      <th>Margen op.</th>
+      <th>Evento</th>
+    </tr>
+  </thead>
+  <tbody id="tabla"></tbody>
+</table>
+</div>
+
+<div class="sec" style="margin-top:16px;">Triggers de contratación + flujo acumulado</div>
+<div class="grid2">
+  <div class="card">
+    <div style="font-size:13px;font-weight:500;margin-bottom:10px;">Hitos por mes</div>
+    <div id="triggers_html"></div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;font-weight:500;margin-bottom:10px;">Flujo de caja acumulado</div>
+    <div class="chart-wrap2" style="margin-bottom:0;">
+      <canvas id="c_flujo"></canvas>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:16px;padding:11px 14px;background:#E1F5EE;border-left:2px solid #1D9E75;font-size:13px;color:#085041;">
+  <strong>Resumen ejecutivo:</strong> Hunter entra M3 (~50–60 subs). Comercial usuarios M5. Marketing + Contador M7. Capital ángel objetivo M9. Break-even operativo M8–M10 según velocidad de crecimiento. Tú sigues en tu trabajo hasta que revenue + ángel den 12 meses de runway personal.
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const NETO_POND   = 218;
+const PRECIO_POND = 0.70*499 + 0.20*899 + 0.10*1199; // $699
+
+const COSTOS = [
+  {mes:1,  equipo:0,     ops:3000,  label:''},
+  {mes:2,  equipo:0,     ops:3000,  label:''},
+  {mes:3,  equipo:19500, ops:4000,  label:'⚡ Hunter entra'},
+  {mes:4,  equipo:19500, ops:4000,  label:''},
+  {mes:5,  equipo:31500, ops:5000,  label:'⚡ Comercial usuarios'},
+  {mes:6,  equipo:31500, ops:5000,  label:''},
+  {mes:7,  equipo:50000, ops:7000,  label:'⚡ Marketing + Contador'},
+  {mes:8,  equipo:50000, ops:8000,  label:''},
+  {mes:9,  equipo:58000, ops:9000,  label:'⚡ Capital ángel activo'},
+  {mes:10, equipo:58000, ops:9000,  label:''},
+  {mes:11, equipo:65000, ops:10000, label:''},
+  {mes:12, equipo:65000, ops:10000, label:'🏁 Cierre año 1'},
+];
+
+const INV = [15000,15000,15000,12000,10000,8000,5000,3000,0,0,0,0];
+
+let charts = {};
+
+function fmtNum(n) {
+  n = Math.round(n);
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(2) + 'M';
+  if (n >= 1000)    return '$' + (n/1000).toFixed(0) + 'k';
+  return '$' + n;
+}
+
+function fmtFull(n) {
+  return '$' + Math.round(n).toLocaleString('es-MX');
+}
+
+function recalc() {
+  const m1  = parseInt(document.getElementById('s_m1').value);
+  const cre = parseInt(document.getElementById('s_cre').value);
+  const ch  = parseInt(document.getElementById('s_ch').value) / 100;
+
+  document.getElementById('v_m1').textContent = m1;
+  document.getElementById('v_cre').textContent = cre;
+  document.getElementById('v_ch').textContent = (ch*100) + '%';
+
+  let activos = 0;
+  const rows = [];
+  let acumNeto = 0;
+  let acumFlujo = 0;
+  const flujoArr = [];
+
+  for (let m = 1; m <= 12; m++) {
+    const nuevos   = m === 1 ? m1 : Math.round(m1 + cre * (m - 1));
+    activos        = Math.round(activos * (1 - ch) + nuevos);
+    const mrr      = Math.round(activos * PRECIO_POND);
+    const neto     = Math.round(activos * NETO_POND);
+    const c        = COSTOS[m - 1];
+    const costoTot = c.equipo + c.ops;
+    const inv      = INV[m - 1];
+    const margen   = neto - costoTot + inv;
+    acumNeto      += neto;
+    acumFlujo     += margen;
+    flujoArr.push(acumFlujo);
+    rows.push({ m, nuevos, activos, mrr, neto, costoTot, inv, margen, label: c.label, trigger: c.label !== '' });
+  }
+
+  const last = rows[11];
+  document.getElementById('kpi_subs').textContent = last.activos.toLocaleString('es-MX');
+  document.getElementById('kpi_mrr').textContent  = fmtNum(last.mrr);
+  document.getElementById('kpi_neto').textContent = fmtNum(last.neto);
+  document.getElementById('kpi_acum').textContent = fmtNum(acumNeto);
+
+  document.getElementById('tabla').innerHTML = rows.map(r => `
+    ${r.trigger ? `<tr class="trigger-row"><td colspan="9">${r.label}</td></tr>` : ''}
+    <tr class="${r.m % 2 === 0 ? 'hl' : ''}">
+      <td>M${r.m}</td>
+      <td>+${r.nuevos}</td>
+      <td>${r.activos.toLocaleString()}</td>
+      <td>${fmtNum(r.mrr)}</td>
+      <td>${fmtNum(r.neto)}</td>
+      <td class="neg">${fmtNum(r.costoTot)}</td>
+      <td style="color:#378ADD">${r.inv > 0 ? fmtNum(r.inv) : '—'}</td>
+      <td class="${r.margen >= 0 ? 'pos' : 'neg'}">${fmtNum(r.margen)}</td>
+      <td>${r.trigger ? '<span class="tag">Hito</span>' : ''}</td>
+    </tr>`).join('');
+
+  document.getElementById('triggers_html').innerHTML = rows.filter(r => r.trigger).map(r => `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:.5px solid rgba(0,0,0,0.1);font-size:12px;gap:8px;">
+      <div>
+        <div style="font-weight:500;">${r.label.replace('⚡ ','').replace('🏁 ','')}</div>
+        <div style="font-size:11px;color:#6b6b67;margin-top:2px;">${r.activos} subs · Neto ${fmtNum(r.neto)}/mes · MRR ${fmtNum(r.mrr)}</div>
+      </div>
+      <span style="font-size:11px;font-weight:500;color:#6b6b67;flex-shrink:0;">M${r.m}</span>
+    </div>`).join('');
+
+  const labels  = rows.map(r => 'M' + r.m);
+  const revData = rows.map(r => r.neto);
+  const cosData = rows.map(r => r.costoTot);
+  const invData = rows.map(r => r.inv);
+  const marData = rows.map(r => r.margen);
+  const subData = rows.map(r => r.activos);
+
+  Object.values(charts).forEach(ch => ch.destroy());
+  charts = {};
+
+  charts.rev = new Chart(document.getElementById('c_revenue'), {
+    type: 'bar',
+    data: { labels, datasets: [
+      { label: 'Revenue neto', data: revData, backgroundColor: '#9FE1CB', borderWidth: 0, order: 2 },
+      { label: 'Costos equipo+ops', data: cosData, backgroundColor: '#F7C1C1', borderWidth: 0, order: 2 },
+      { type: 'line', label: 'Inversión fundador', data: invData, borderColor: '#378ADD', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 3, tension: 0.3, order: 1 },
+      { type: 'line', label: 'Margen op.', data: marData, borderColor: '#1D9E75', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 3, tension: 0.3, order: 1 }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + fmtFull(ctx.parsed.y) } } },
+      scales: { y: { ticks: { callback: v => fmtNum(v), font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.05)' } }, x: { ticks: { autoSkip: false, font: { size: 11 } } } } }
+  });
+
+  charts.subs = new Chart(document.getElementById('c_subs'), {
+    type: 'line',
+    data: { labels, datasets: [
+      { label: 'Suscriptores activos', data: subData, borderColor: '#1D9E75', backgroundColor: 'rgba(29,158,117,0.08)', borderWidth: 2.5, pointRadius: 4, fill: true, tension: 0.3 }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y + ' suscriptores' } } },
+      scales: { y: { ticks: { font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.05)' } }, x: { ticks: { autoSkip: false, font: { size: 11 } } } } }
+  });
+
+  charts.flujo = new Chart(document.getElementById('c_flujo'), {
+    type: 'line',
+    data: { labels, datasets: [
+      { label: 'Flujo acumulado', data: flujoArr, borderColor: '#1D9E75', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 3, tension: 0.3 }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => fmtFull(ctx.parsed.y) } } },
+      scales: { y: { ticks: { callback: v => fmtNum(v), font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.05)' } }, x: { ticks: { autoSkip: false, font: { size: 11 } } } } }
+  });
+}
+
+recalc();
+</script>
+</body>
+</html>
